@@ -25,7 +25,12 @@ MACHINES = {
                         :dfile => './sata4.vdi',
                         :size => 250, # Megabytes
                         :port => 4
-                }
+                },
+		:sata5 => {
+			:dfile => './sata5.vdi',
+			:size => 250,
+			:port => 5
+		}
 
 	}
 
@@ -67,6 +72,13 @@ Vagrant.configure("2") do |config|
 	      mkdir -p ~root/.ssh
               cp ~vagrant/.ssh/auth* ~root/.ssh
 	      yum install -y mdadm smartmontools hdparm gdisk
+	      mdadm --zero-superblock --force /dev/sd{b,c,d,e,f}	    # remove superbloc  
+	      mdadm --create --verbose /dev/md0 -l 5 -n 5 /dev/sd{b,c,d,e,f}   # create raid 5 in 5 disks
+	      mkdir /etc/mdadm
+	      touch /etc/mdadm/mdadm.conf
+	      echo "DEVICE partitions" > /etc/mdadm/mdadm.conf
+	      mdadm --detail --scan --verbose | awk '/ARRAY/ {print}' >> /etc/mdadm/mdadm.conf
+	      
   	  SHELL
 
       end
